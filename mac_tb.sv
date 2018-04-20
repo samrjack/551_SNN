@@ -10,11 +10,11 @@ module mac_tb();
 
   // Initiialize
   logic signed [7:0] stm_a, stm_b;
-  logic signed [15:0] acc;
-  logic of, uf, clr_n, clk, rst_n;
+  logic signed [25:0] acc;
+  logic clr_n, clk, rst_n;
   int signed exp_acc;
   
-  mac iMAC(.clk(clk),.a(stm_a), .b(stm_b), .acc(acc), .of(of), .uf(uf), .clr_n(clr_n), .rst_n(rst_n));
+  mac iMAC(.clk(clk),.a(stm_a), .b(stm_b), .acc(acc), .clr_n(clr_n), .rst_n(rst_n));
 
   /*****************************************************************************
   * Call load when the values of a and b have been changed so that they may be *
@@ -28,39 +28,9 @@ module mac_tb();
     @(negedge clk); // let changes propagate through before comparing
 
     // Check if expected value matches given value
-    if(acc != exp_acc[15:0]) begin
+    if(acc != exp_acc[25:0]) begin
       $display("FAIL: actual result did not match expected output\t");
       $display("\texpected: %d\tactual:%d\n", exp_acc, acc);
-      $stop;
-    end
-
-    // Check if overflow has occured
-    if(exp_acc > 16'sh7FFF) begin
-      if(of != 1'b1 || uf == 1'b1) begin
-        $display("FAIL: overflow not properly detected\n");
-        $display("\tOF: %d\tUF: %d\tacc: %h\texpected: %h\n", of, uf, acc, exp_acc);
-        $stop;
-      end
-      // Sign extend expected value to match acc so that future calculations
-      // continue to match.
-      exp_acc = {{16{acc[15]}}, acc}; 
-
-    // Check if underflow has occred
-    end else if(exp_acc < 16'sh8000) begin
-      if(of == 1'b1 || uf != 1'b1) begin
-        $display("FAIL: underflow not properly detected\n");
-        $display("\tOF: %d\tUF: %d\tacc: %h\texpected: %h\n", of, uf, acc, exp_acc);
-        $stop;
-      end
-      // Sign extend expected value to match acc so that future calculations
-      // continue to match.
-      exp_acc = {{16{acc[15]}}, acc};
-
-    // If neither overflow nor underflow has occured, make sure of and uf
-    // aren't asserted.
-    end else if(of != 1'b0 || uf != 1'b0) begin
-      $display("FAIL: underflow or overflow unexpectedly asserted\n");
-      $display("\tOF: %d\tUF: %d\tacc: %h\texpected: %h\n", of, uf, acc, exp_acc);
       $stop;
     end
   endtask
