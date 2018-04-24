@@ -15,7 +15,7 @@ module snn_core_tb();
   wire done;
   
   // Variables used for testing
-  integer i, j, file_handle, num_matches;
+  integer i, j, file_handle, num_matches, error;
   reg pixel;
   reg [639:0] err_str;
   reg [1023:0] file_line;

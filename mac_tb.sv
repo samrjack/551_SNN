@@ -14,7 +14,7 @@ module mac_tb();
   logic clr_n, clk, rst_n;
   int signed exp_acc;
   
-  mac iMAC(.clk(clk),.a(stm_a), .b(stm_b), .acc(acc), .clr_n(clr_n), .rst_n(rst_n));
+  mac iMAC(.clk(clk),.in1(stm_a), .in2(stm_b), .acc(acc), .clr_n(clr_n), .rst_n(rst_n));
 
   /*****************************************************************************
   * Call load when the values of a and b have been changed so that they may be *
@@ -58,6 +58,7 @@ module mac_tb();
     clear();
 
     // First example: 2*5 + (-2)*5 + (-3)*8
+    
     stm_a = 8'd2;
     stm_b = 8'd5;
     load();
