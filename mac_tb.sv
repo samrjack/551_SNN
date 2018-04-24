@@ -10,11 +10,11 @@ module mac_tb();
 
   // Initiialize
   logic signed [7:0] stm_a, stm_b;
-  logic signed [15:0] acc;
-  logic of, uf, clr_n, clk, rst_n;
+  logic signed [25:0] acc;
+  logic clr_n, clk, rst_n;
   int signed exp_acc;
   
-  mac iMAC(.clk(clk),.a(stm_a), .b(stm_b), .acc(acc), .of(of), .uf(uf), .clr_n(clr_n), .rst_n(rst_n));
+  mac iMAC(.clk(clk),.in1(stm_a), .in2(stm_b), .acc(acc), .clr_n(clr_n), .rst_n(rst_n));
 
   /*****************************************************************************
   * Call load when the values of a and b have been changed so that they may be *
@@ -26,14 +26,13 @@ module mac_tb();
     $display("adding new values to result: a = %d\tb=%d\n", stm_a, stm_b);
     exp_acc = exp_acc + stm_a * stm_b;
     @(negedge clk); // let changes propagate through before comparing
-
-    // Check if expected value matches given value
-    if(acc != exp_acc[15:0]) begin
+      // Check if expected value matches given value
+    if(acc != exp_acc[25:0]) begin
       $display("FAIL: actual result did not match expected output\t");
       $display("\texpected: %d\tactual:%d\n", exp_acc, acc);
       $stop;
     end
-
+/*
     // Check if overflow has occured
     if(exp_acc > 16'sh7FFF) begin
       if(of != 1'b1 || uf == 1'b1) begin
@@ -63,6 +62,7 @@ module mac_tb();
       $display("\tOF: %d\tUF: %d\tacc: %h\texpected: %h\n", of, uf, acc, exp_acc);
       $stop;
     end
+*/
   endtask
 
   /****************************************************************************
@@ -88,6 +88,7 @@ module mac_tb();
     clear();
 
     // First example: 2*5 + (-2)*5 + (-3)*8
+    
     stm_a = 8'd2;
     stm_b = 8'd5;
     load();
