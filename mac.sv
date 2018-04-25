@@ -6,54 +6,36 @@
 *          
 * 
 * INPUTS:
-*   a     - 1st number operand.
-*   b     - 2nd number operand.
+*   in1     - 1st number operand.
+*   in2     - 2nd number operand.
 *   clr_n - Clears accumulated value. SYNCHRONOUS. 
-*   clk   - System timing clock. Assumed to run at 50MH.
+*   clk   - System timing clock. Assumed to run at 50MHz.
 *   rst_n - ASYNCHRONOUS active-low reset.
 *
 * OUPTUTS:
 *   acc   - Accumulated value of inputs.
-*   of    - Flag that goes high when overflow is detected.
-*   uf    - Flag that goes high when overflow is detected.
 *********************************************************************/
-module mac(a, b, clk, rst_n, clr_n, acc, of, uf);
+module mac(in1, in2, clk, rst_n, clr_n, acc);
 
   input clk, rst_n, clr_n;
-  input signed [7:0] a, b;  
+  input signed [7:0] in1, in2;  
 
-  output of, uf;
-  output[15:0] acc;
+  output [25:0] acc;
 
-  wire signed [15:0] mult, acc_nxt;
-  wire signed [16:0] add; // Extra bit for testing overflow
-  
-  reg of, uf;
-  reg [15:0] acc;
+  wire signed [15:0] mult;
+  wire signed [25:0] add, acc_nxt;
 
-  assign mult    = a*b;
-  assign add     = {mult[15], mult} + {acc[15], acc};
-  assign acc_nxt = (clr_n ? add[15:0] : 16'h0000);
+  reg [25:0] acc;
+
+  assign mult     = in1*in2;
+  assign add     = {{10{mult[15]}}, mult} + acc;
+  assign acc_nxt = (clr_n ?  add : 26'h0);
 
   // Accumulator assignment
   always_ff @(posedge clk, negedge rst_n)
     if(!rst_n)
-      acc = 16'h0000;
+      acc = 26'h0000;
     else
       acc = acc_nxt;
-
-  // Overflow and Underflow assignment
-  always_ff @(posedge clk, negedge rst_n) begin
-    if(!rst_n) begin      
-      of = 0;
-      uf = 0;
-    end else
-      of = 0;
-      uf = 0;
-      case(add[16:15])
-        2'b10: uf = 1;
-        2'b01: of = 1;
-      endcase
-  end
 
 endmodule
