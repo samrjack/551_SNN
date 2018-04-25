@@ -5,8 +5,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   output [3:0] digit;
   output reg done;
 
-  assign digit = addr_o_u;
-
+  
   reg [15:0] MAC_RESULT;
   reg clr_784, clr_32, clr_10, doCnt_784, doCnt_32, doCnt_10, clr_mac_n, stage, layer, we_h, we_o; // Modified in always@
 
@@ -62,11 +61,12 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
 
   // DATA FLOW  'b' of mac
   assign q_input_l = {8{q_input}};   // Extend q_input
-  assign in2 = (stage?) w_o : w_h; // stage = 0, weight = w_h, as in2 input of MAC
-  assign in1 = (layer?) q_hidden : q_input_l; //layer = 0, q_input as in1 input of MAC
+  assign in2 = (stage) ? w_o : w_h; // stage = 0, weight = w_h, as in2 input of MAC
+  assign in1 = (layer) ? q_hidden : q_input_l; //layer = 0, q_input as in1 input of MAC
   assign act_input = (!mac_res[25] && |mac_res[24:17]) ? 11'h3ff : 
                      (mac_res[25] && ~&mac_res[24:17]) ? 11'h400 : 
 					 ret(mac_res[17:7]) + 10'h400;  //rect(mac)+1024
+  assign digit = addr_o_u;
   assign addr_w_h[14:0] = {addr_h_u[4:0], addr_input_unit[9:0]}; //addr_hidden_weight[14:0] = {addr_h_u[4:0], cnt_input[9:0]}
   assign addr_w_o[8:0]  = {addr_o_u[3:0], addr_h_u[4:0]};
 
@@ -78,7 +78,6 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
       addr_input_unit <= 10'h0;
     else if (doCnt_784)                 // NOTE: Make sure doCnt_784 is asserted when both need update
       addr_input_unit <= addr_input_unit + 1;
-    p
   end			
 
   // Counter Logic 32	      
@@ -204,7 +203,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
         doCnt_32 = 1'b1;
         layer = 1'b1; 
         stage = 1'b1; 
-        if (addr_h_u == 5'b1f) begin
+        if (addr_h_u == 5'h1f) begin
           nxt_state = MAC_OUT_1;
           doCnt_10 = 1'b1;
           clr_32 = 1'b1;
