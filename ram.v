@@ -13,10 +13,10 @@
 *   q    - Data at mem position addr.
 *******************************************************************************/
 module ram(data, addr, we, clk, q);
-  
-  localparam ADDR_WIDTH = 10;
-  localparam DATA_WIDTH = 8;
-  localparam INIT_FILE = "";
+
+  parameter DATA_WIDTH;
+  parameter ADDR_WIDTH;
+  parameter INIT_FILE;
 
   input we, clk;
   input [(DATA_WIDTH - 1):0] data;
@@ -24,21 +24,22 @@ module ram(data, addr, we, clk, q);
   output [(DATA_WIDTH - 1):0] q;
 
   // Declare the RAM variable
-  reg [DATA_WIDTH - 1:0] ram[2**ADDR_WIDTH - 1:0];
+  reg [(DATA_WIDTH - 1):0] ram_mem[(2**ADDR_WIDTH - 1):0];
 
   // Variable to hold the registered read address
   reg [ADDR_WIDTH - 1:0] addr_reg;
 
-  initial
-    readmemh(INIT_FILE, ram);
+  initial begin
+    $readmemh(INIT_FILE, ram_mem);
   end
 
   always @(posedge clk) begin
     if(we) // Write
-      ram[addr] <= data;
+      ram_mem[addr] <= data;
+
     addr_reg <= addr;
   end
 
-  assign q = ram[addr_reg];
+  assign q = ram_mem[addr_reg];
 
-endmodule;
+endmodule
