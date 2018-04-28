@@ -37,9 +37,19 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
 	UART
 	******************************************************/
 	
-	// Declare wires below
+  // UART outputs
   wire rx_rdy;
   wire [7:0] uart_data;
+
+  // Loader outputs
+  wire addr, ready, q;
+
+  // Outputs from core
+  wire done;
+  wire [3:0] digit;
+
+  // Transmitter outputs
+  wire tx_ready;
 	
 	// Double flop RX for meta-stability reasons
 	always_ff @(posedge clk, negedge rst_n)
@@ -55,12 +65,38 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
 	// Instantiate UART_RX and UART_TX and connect them below
 	// For UART_RX, use "uart_rx_synch", which is synchronized, not "uart_rx".
 
-  uart_rx receiver(.clk(clk), .rst_n(rst_n), .rx_rdy(rx_rdy), .rx_data(uart_data), .rx(uart_rx_synch));
-  uart_tx transceiver(.clk(clk), .rst_n(rst_n), .tx_start(rx_rdy), .tx_data(uart_data), .tx(uart_tx));
-			
+  uart_rx receiver(.clk(clk)
+                 , .rst_n(rst_n)
+                 , .rx_rdy(rx_rdy)
+                 , .rx_data(uart_data)
+                 , .rx(uart_rx_synch));
+
+  load_input_file loader(.clk(clk)
+                       , .rst_n(rst_n)
+                       , .trigger(rx_rdy)
+                       , .data(uart_data)
+                       , .addr(addr)
+                       , .ready(ready)
+                       , .q(q));
+
+  snn_core core(.clk(clk)
+              , .rst_n(rst_n)
+              , .start(ready)
+              , .q_input(q)
+              , .addr_input_unit(addr)
+              , .digit(digit)
+              , .done(done));
+
+  uart_tx transmitter(.clk(clk)
+                    , .rst_n(rst_n)
+                    , .tx_start(done)
+                    , .tx_data(digit + 8'h30)
+                    , .tx_rdy(tx_ready)
+                    , .tx(uart_tx));
+
 	/******************************************************
 	LED
 	******************************************************/
-	assign led = uart_data;
+	assign led = digit;
 
 endmodule
