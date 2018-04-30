@@ -1,5 +1,5 @@
 *.swp
-work/*
+*work/*
 *.bak
 *.mpf
 *.mti
