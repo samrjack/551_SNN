@@ -35,28 +35,28 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   // Instantiate ROMS (READ ONLY)
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(15)
-      , .INIT_FILE("rom_hidden_weight_contents.txt")) 
+      , .INIT_FILE("mem_init_files/rom_hidden_weight_contents.txt")) 
       rom_hidden_weight(.addr(addr_w_h), .clk(clk), .q(w_h));
 
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(9)
-      , .INIT_FILE("rom_output_weight_contents.txt")) 
+      , .INIT_FILE("mem_init_files/rom_output_weight_contents.txt")) 
       rom_output_weight(.addr(addr_w_0), .clk(clk), .q(w_o));
 
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(11)
-      , .INIT_FILE("rom_act_func_lut_contents.txt")) 
+      , .INIT_FILE("mem_init_files/rom_act_func_lut_contents.txt")) 
       rom_act_func_lut(.addr(addr_f_act), .clk(clk), .q(f_act));
 
   //Instantiate RAM
   ram #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(5)
-      , .INIT_FILE("ram_hidden_contents.txt"))
+      , .INIT_FILE("mem_init_files/ram_hidden_contents.txt"))
       ram_hidden_unit(.data(f_act), .addr(addr_h_u), .we(we_h), .clk(clk), .q(q_hidden));
 
   ram #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(4)
-      , .INIT_FILE("ram_output_contents.txt"))
+      , .INIT_FILE("mem_init_files/ram_output_contents.txt"))
       ram_op_uni(.data(f_act), .addr(addr_o_u), .we(we_o), .clk(clk), .q(q_output));
 
   // DATA FLOW  'b' of mac
