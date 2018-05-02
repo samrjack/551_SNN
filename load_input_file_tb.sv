@@ -39,63 +39,58 @@ module load_input_file_tb();
 
   task transmit;
     input [7:0] data_test;
-    begin
-      data = data_test;
-      trigger = 1;
-      @(posedge clk);
-      trigger = 0;
-      data = 8'h00;
-      @(posedge(clk));
-
-
-      // Send signal with no trigger
-      fork
-        begin: receive
-          repeat(BAUD >> 1) @(posedge clk);
-          for(i = 0; i < 7; i = i + 1) begin
-            sent_data[i] = addr;
-            repeat(BAUD) @(posedge clk);
+    begin: TRANSMIT_TASK
+      for(i = 0; i < 98; i = i + 1) begin: LOAD_LOOP
+        // TODO Comment here
+        fork
+          begin: LOAD_DATA
+            data = data_test;
+            trigger = 1;
+            @(posedge clk);
+            trigger = 0;
+            data = 8'h00;
+            repeat(50) @(posedge(clk));
+            disable READY_CHECK;
           end
-          sent_data[7] = data[7];
-          disable ready_check;
-        end
 
-        begin: ready_check
-          if(trigger == 1) begin
-            $display("ERROR :: TX_RDY never deasserted before sending signal\n");
-            $stop;
+          begin: READY_CHECK
+            if(ready == 1) begin
+              $display("ERROR :: READY asserted in middle of transmittion.\n");
+              $stop;
+            end
+
+            @(posedge ready)
+            
+            if(i != 97) begin
+              $display("ERROR :: READY asserted too early.\n");
+              $stop;
+            end
+
+            $display("PASSED :: Loaded all data.\n");
+            disable LOAD_DATA;
+            disable LOAD_LOOP;
           end
-          @(posedge trigger);
-          $display("ERROR :: TX_RDY asserted while still sending signal\n");
-          $stop;
         end
-      join
-     
-      // Make sure ready goes high
-      fork
-        begin: wait_for_ready
-          @(posedge ready);
-          disable ready_timeout;
-        end
-        
-        begin: ready_timeout
-          repeat(BAUD) @(posedge clk);
-          $display("ERROR :: READY never asserted after signal fully sent\n");
-          $stop;
-        end
-      join
-      
-      // Check that the correct address is passed
-      
-	
+      end // For loop end
 
-      // Check that the data transferred is correct
-      if(sent_data == data) begin
-       $display("PASSED :: Data  correctly sent. Expected: %h\tReceived: %h\n",  data, sent_data);
-      end else begin
-       $display("ERROR :: Data incorrectly sent. Expected: %h\tReceived: %h\n", {1'h1, data, 1'h0}, sent_data);
+      if(ready != 1) begin
+        $display("ERROR :: All data sent but READY never asserted.\n");
         $stop;
       end
+
+      // Check that the correct address is passed
+      
+      data = data_test;      
+      for(addr = 0; addr < 9'd784; addr = addr + 1) begin: CHECK_DATA_LOOP
+        @(posedge clk);
+        if(q != data[0]) begin
+          $display("ERROR :: Values not matching. Addr = %d\tq = %d\tdata[0] = %d.\n", addr, q, data[0]);
+          $stop;
+        end
+        data = {data[0], data[7:1]};
+      end // End data check for loop
+
+      $display("PASSED :: Data  correctly sent.\n");
     end // End of task block
   endtask
 
@@ -112,4 +107,6 @@ module load_input_file_tb();
   //Clock
   always 
     #5 clk = ~clk;
-  endmodule
+
+endmodule
+

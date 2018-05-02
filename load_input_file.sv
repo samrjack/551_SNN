@@ -32,8 +32,7 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
   
   /* State description:
    *    IDLE - The default state. Waiting for new data.
-   *    LOAD -
-   *    DONE -
+   *    LOAD - TODO
    */
   typedef enum reg {IDLE, LOAD} state_t;
   state_t state, nxt_state;
