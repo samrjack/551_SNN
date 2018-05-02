@@ -34,7 +34,7 @@ module snn_core_tb();
               , .digit(digit));
   
   generate 
-    for(i = 0; i < 10; i = i+1) begin
+    for(i = 0; i < 10; i = i+1) begin: INPUT_RAM_INIT
       ram #(.DATA_WIDTH(1)
           , .ADDR_WIDTH(10)
           , .INIT_FILE($sformatf("input_samples/ram_input_contents_sample_%d.txt", i)))
