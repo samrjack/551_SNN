@@ -32,19 +32,19 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
   
   /* State description:
    *    IDLE - The default state. Waiting for new data.
-   *    LOAD - TODO
+   *    LOAD - Data has been given to load in.
    */
-  typedef enum reg {IDLE, LOAD} state_t;
+  typedef enum reg [1:0] {IDLE, LOAD, END_LOAD} state_t;
   state_t state, nxt_state;
 
   ram #(.DATA_WIDTH(1)
       , .ADDR_WIDTH(10)
       , .INIT_FILE("")) 
-      inputStorage(.data(input_data[7]), .addr(ram_addr), .we(we), .clk(clk), .q(q));
+      inputStorage(.data(input_data[0]), .addr(ram_addr), .we(we), .clk(clk), .q(q));
       
   assign ram_addr = (state == LOAD ? cur_addr : addr);
   
-  // Wyoming Transition Block 
+  // state Transition Block 
   always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n)
       state <= IDLE;
@@ -57,7 +57,7 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
     if(!rst_n)
       input_data = 8'hxx;
     else if(state == LOAD)
-      input_data = {input_data[6:0], 1'hx};
+      input_data = {1'hx, input_data[7:1]};
     else if(trigger == 1'b1)
       input_data = data;
   end
@@ -91,10 +91,14 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
           nxt_state = LOAD;
           we = 1;
           if(cur_addr[2:0] == 4'h7) begin
-            nxt_state = IDLE;
-            if(cur_addr == 10'h310)
-              ready = 1'b1;
+            nxt_state = END_LOAD;
           end
+        end
+      
+      END_LOAD:
+        begin
+          if(cur_addr == 10'h310) // h310 == d784
+            ready = 1'b1;
         end
 
     endcase

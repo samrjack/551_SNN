@@ -9,3 +9,4 @@ transcript
 *.vstf
 *.qsf
 *.do
+*.nfs*

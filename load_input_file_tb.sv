@@ -10,7 +10,6 @@ module load_input_file_tb();
   reg clk, rst_n, trigger;
   reg [7:0] data;
   reg [7:0] sent_data;
-  int i;
   // Variables used for testing
   wire q, ready;
 
@@ -33,7 +32,6 @@ module load_input_file_tb();
     trigger = 0;
     data = 8'h00;
     sent_data = 0;
-    i = 0;
     @(posedge clk);
     rst_n = 1;
   endtask
@@ -41,49 +39,53 @@ module load_input_file_tb();
   task transmit;
     input [7:0] data_test;
     begin: TRANSMIT_TASK
-      for(addr = 0; addr < 100; addr++) begin: LOAD_LOOP
-        // TODO Comment here
-        fork
-          begin: LOAD_DATA
-            data = data_test;
-            trigger = 1;
-            @(posedge clk);
-            trigger = 0;
-            data = 8'h00;
-            repeat(50) @(posedge(clk));
-            disable READY_CHECK;
-          end
-
-          begin: READY_CHECK
-            if(ready == 1) begin
-              $display("ERROR :: READY asserted in middle of transmittion.\n");
-              $stop;
+      begin: LOAD_LOOP
+        for(addr = 0; addr < 100; addr++) begin
+          fork
+            begin: LOAD_DATA
+              data = data_test;
+              trigger = 1;
+              @(posedge clk);
+              trigger = 0;
+              data = 8'h00;
+              repeat(50) @(posedge(clk));
+              disable READY_CHECK;
             end
 
-            @(posedge ready)
-            
-            if(i != 97) begin
-              $display("ERROR :: READY asserted too early.\n");
-              $stop;
-            end
+            begin: READY_CHECK
+              if(ready == 1) begin
+                $display("ERROR :: READY asserted in middle of transmittion at #%d.\n", addr);
+                $stop;
+              end
 
-            $display("PASSED :: Loaded all data.\n");
-            disable LOAD_DATA;
-            disable LOAD_LOOP;
-          end
-        join
-   
-      end // For loop end
+              @(posedge ready)
+              
+              if(addr != 97) begin
+                $display("ERROR :: READY asserted at time %d.\n", addr);
+                $stop;
+              end
+
+              $display("PASSED :: Loaded all data.\n");
+              disable LOAD_DATA;
+              disable LOAD_LOOP;
+            end
+          join
+    
+        end // For loop end
+      end // For loop break point
 
       if(ready != 1) begin
         $display("ERROR :: All data sent but READY never asserted.\n");
         $stop;
       end
 
+      addr = 0;
+
       // Check that the correct address is passed
       data = data_test;      
       for(addr = 0; addr < 10'd784; addr++) begin: CHECK_DATA_LOOP
         @(posedge clk);
+        #1; // Give q's non-blocking assignment time to propogate through
         if(q != data[0]) begin
           $display("ERROR :: Values not matching. Addr = %d\tq = %d\tdata[0] = %d.\n", addr, q, data[0]);
           $stop;
@@ -101,6 +103,18 @@ module load_input_file_tb();
     initialize();
 
     transmit(8'hFF);
+    repeat(BAUD) @(posedge clk);
+    
+    transmit(8'h00);
+    repeat(BAUD) @(posedge clk);
+
+    transmit(8'b10011001);
+    repeat(BAUD) @(posedge clk);
+
+    transmit(8'b11000011);
+    repeat(BAUD) @(posedge clk);
+
+    transmit(8'b10010011);
     repeat(BAUD) @(posedge clk);
 
     $stop;
