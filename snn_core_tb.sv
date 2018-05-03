@@ -18,7 +18,6 @@ module snn_core_tb();
   reg pixel;
   reg [639:0] err_str;
   reg [1023:0] file_line;
-  string filename;
   genvar i;
   
   reg data;
@@ -72,7 +71,6 @@ module snn_core_tb();
         $display("Passed test\n");
       else
         $display("Failed Test\n");
-        
     end
     $stop;
   end 
