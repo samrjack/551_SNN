@@ -14,7 +14,7 @@ module load_input_file_tb();
   // Variables used for testing
   wire q, ready;
 
-  wire [9:0] addr;
+  reg [9:0] addr;
 
   localparam BAUD = 12'hA2D;
   load_input_file iDUT(.clk(clk)
@@ -27,6 +27,7 @@ module load_input_file_tb();
 
 
   task initialize;
+    addr = 0;
     clk = 0;
     rst_n = 0;
     trigger = 0;
@@ -40,7 +41,7 @@ module load_input_file_tb();
   task transmit;
     input [7:0] data_test;
     begin: TRANSMIT_TASK
-      for(i = 0; i < 98; i = i + 1) begin: LOAD_LOOP
+      for(addr = 0; addr < 100; addr++) begin: LOAD_LOOP
         // TODO Comment here
         fork
           begin: LOAD_DATA
@@ -69,8 +70,10 @@ module load_input_file_tb();
             $display("PASSED :: Loaded all data.\n");
             disable LOAD_DATA;
             disable LOAD_LOOP;
+          end
+        join
    
-        end // For loop end
+      end // For loop end
 
       if(ready != 1) begin
         $display("ERROR :: All data sent but READY never asserted.\n");
@@ -78,9 +81,8 @@ module load_input_file_tb();
       end
 
       // Check that the correct address is passed
-      
       data = data_test;      
-      for(addr = 0; addr < 10'd784; addr = addr + 1) begin: CHECK_DATA_LOOP
+      for(addr = 0; addr < 10'd784; addr++) begin: CHECK_DATA_LOOP
         @(posedge clk);
         if(q != data[0]) begin
           $display("ERROR :: Values not matching. Addr = %d\tq = %d\tdata[0] = %d.\n", addr, q, data[0]);
@@ -89,14 +91,10 @@ module load_input_file_tb();
         data = {data[0], data[7:1]};
       end
 
-    join
- // End data check for loop
-
+      // End data check for loop
       $display("PASSED :: Data  correctly sent.\n");
-     end
-     // End of task block
-  end
-endtask
+    end // End of task block
+  endtask
 
   //Main logic block
   initial begin

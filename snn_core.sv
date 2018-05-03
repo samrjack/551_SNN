@@ -16,8 +16,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   reg [4:0] nxt_digit;
 
   // reg [7:0]   d_output, d_hidden;
-  wire [7:0] in1, in2, w_h, w_o, q_output, q_hidden; //, q_input_l, f_act_o;
-
+  wire [7:0] in1, in2, w_h, w_o, q_output, q_hidden, f_act_o, q_input_l; 
   wire [25:0] mac_res;
   wire [14:0] addr_w_h;
   wire [8:0] addr_w_o;
@@ -49,27 +48,27 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(11)
       , .INIT_FILE("mem_init_files/rom_act_func_lut_contents.txt"))
-      rom_act_func_lut(.addr(addr_f_act), .clk(clk), .q(f_act));
+      rom_act_func_lut(.addr(act_input), .clk(clk), .q(f_act_o));
 
   // Instantiate RAM     
   ram #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(5)
       , .INIT_FILE("mem_init_files/ram_hidden_contents.txt"))
-      ram_hidden_unit(.data(f_act), .addr(addr_h_u), .we(we_h), .clk(clk), .q(q_hidden));
+      ram_hidden_unit(.data(f_act_o), .addr(addr_h_u), .we(we_h), .clk(clk), .q(q_hidden));
  
       
   ram #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(4)
       , .INIT_FILE("mem_init_files/ram_output_contents.txt"))
-      ram_op_uni(.data(f_act), .addr(addr_o_u), .we(we_o), .clk(clk), .q(q_output));
+      ram_op_uni(.data(f_act_o), .addr(addr_o_u), .we(we_o), .clk(clk), .q(q_output));
  
   // DATA FLOW  'b' of mac
-  assign q_input_l ={8{q_input}};// {1'b0,{7{q_input}}};   // Extend q_input
+  assign q_input_l = {1'b0,{7{q_input}}};   // Extend q_input FLAG FOR COLTON
   assign in2 = (stage)? w_o : w_h; // stage = 0, weight = w_h, as B input of MAC
   assign in1 = (layer)? q_hidden : q_input_l; //layer = 0, q_input as A input of MAC
-  assign act_input = (!mac_res[25] && |[mac_res[24:17]) ? 11'h3ff :
-                     (mac[25] && ~&mac_res[24:17]) ? 11'h400 :
-                     ret(mac_res[17:7]) + 11'h400;
+  assign act_input = (!mac_res[25] && |mac_res[24:17]) ? 11'h3ff :
+                     (mac_res[25] && ~&mac_res[24:17]) ? 11'h400 :
+                     mac_res[17:7] + 11'h400;
  
   assign addr_w_h = {addr_h_u, addr_input_unit}; //addr_hidden_weight[14:0] = {addr_h_u[4:0], cnt_input[9:0]}
   assign addr_w_o = {addr_o_u, addr_h_u}; //addr_w_o[8:0]  = {addr_o_u[3:0], addr_h_u[4:0]};

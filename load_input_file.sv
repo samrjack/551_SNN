@@ -22,7 +22,7 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
   input [7:0] data;
 
   output q, ready;
-  output [9:0] addr;
+  input [9:0] addr;
 
   reg we, ready;
   reg [7:0] input_data;
