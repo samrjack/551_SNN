@@ -69,9 +69,8 @@ module load_input_file_tb();
             $display("PASSED :: Loaded all data.\n");
             disable LOAD_DATA;
             disable LOAD_LOOP;
-          end
-        end
-      end // For loop end
+   
+        end // For loop end
 
       if(ready != 1) begin
         $display("ERROR :: All data sent but READY never asserted.\n");
@@ -81,18 +80,23 @@ module load_input_file_tb();
       // Check that the correct address is passed
       
       data = data_test;      
-      for(addr = 0; addr < 9'd784; addr = addr + 1) begin: CHECK_DATA_LOOP
+      for(addr = 0; addr < 10'd784; addr = addr + 1) begin: CHECK_DATA_LOOP
         @(posedge clk);
         if(q != data[0]) begin
           $display("ERROR :: Values not matching. Addr = %d\tq = %d\tdata[0] = %d.\n", addr, q, data[0]);
           $stop;
         end
         data = {data[0], data[7:1]};
-      end // End data check for loop
+      end
+
+    join
+ // End data check for loop
 
       $display("PASSED :: Data  correctly sent.\n");
-    end // End of task block
-  endtask
+     end
+     // End of task block
+  end
+endtask
 
   //Main logic block
   initial begin
