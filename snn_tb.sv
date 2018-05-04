@@ -20,7 +20,7 @@ module snn_tb();
   wire [7:0] rom_data;
 
   uart_tx sender(.clk(clk), .rst_n(rst_n), .tx_rdy(ready_freddy), .tx(tx), .tx_start(send), .tx_data(rom_data));
-  snn iDUT(.clk(clk), .sys_rst_n(rst_n), .led(), .uart_tx(rx), .uart_rx(tx));
+  SNN iDUT(.clk(clk), .sys_rst_n(rst_n), .led(), .uart_tx(rx), .uart_rx(tx));
   uart_rx receiver(.clk(clk), .rst_n(rst_n), .rx_rdy(ready_neddy), .rx(rx), .rx_data(output_data));
 
   rom #(.DATA_WIDTH(8)
