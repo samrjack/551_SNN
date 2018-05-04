@@ -17,7 +17,7 @@ module snn_core_tb();
   // Variables used for testing
   wire q1, q2, q3, q4, q5, q6, q7, q8, q9, q0;
 
-  reg [9:0] data;
+  reg data;
   reg we;
   reg[4:0] data_select;
   
