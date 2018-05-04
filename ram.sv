@@ -12,12 +12,9 @@
 * OUTPUTS:
 *   q    - Data at mem position addr.
 *******************************************************************************/
-module ram(data, addr, we, clk, q);
-
-  parameter DATA_WIDTH;
-  parameter ADDR_WIDTH;
-  parameter INIT_FILE;
-
+module ram #(parameter DATA_WIDTH = 8, parameter ADDR_WIDTH = 10, parameter INIT_FILE = "")
+            (data, addr, we, clk, q);
+  
   input we, clk;
   input [(DATA_WIDTH - 1):0] data;
   input [(ADDR_WIDTH - 1):0] addr;
