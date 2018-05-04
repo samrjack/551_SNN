@@ -51,6 +51,7 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
 
   // Transmitter outputs
   wire tx_ready;
+  reg send_trans;
 	
 	// Double flop RX for meta-stability reasons
 	always_ff @(posedge clk, negedge rst_n)
@@ -90,7 +91,7 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
 
   uart_tx transmitter(.clk(clk)
                     , .rst_n(rst_n)
-                    , .tx_start(done)
+                    , .tx_start(send_trans)
                     , .tx_data(led + 8'h30)
                     , .tx_rdy(tx_ready)
                     , .tx(uart_tx));
@@ -98,11 +99,20 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
 	/******************************************************
 	LED
 	******************************************************/
+  // assign led = done ? digit : led;
   always_ff @(posedge clk, negedge rst_n) begin
-	  if(!rst_n) 
+    if(!rst_n) 
       led <= 8'h0;
     else if(done)
       led <= {4'h0, digit};
   end
+
+  always_ff @(posedge clk, negedge rst_n) begin
+    if(!rst_n) 
+      send_trans <= 1'b0;
+    else
+      send_trans <= done;
+  end
+
 
 endmodule
