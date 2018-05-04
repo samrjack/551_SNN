@@ -64,6 +64,10 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
 	
 	// Instantiate UART_RX and UART_TX and connect them below
 	// For UART_RX, use "uart_rx_synch", which is synchronized, not "uart_rx".
+	
+	
+	
+	
 
   uart_rx receiver(.clk(clk)
                  , .rst_n(rst_n)
