@@ -33,7 +33,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   reg  [4:0]   addr_h_u; // Address of hidden unit
   wire [10:0] act_input; // Input to activation function
 
- reg [4:0] nxt_digit;
+ reg [3:0] nxt_digit;
  reg [7:0] nxt_val, val;         //// COMP ////"???????" -Sam
 
   wire [7:0] mac_in1, mac_in2;   // Inputs to MAC madule.

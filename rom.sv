@@ -22,8 +22,8 @@ module rom #(parameter DATA_WIDTH = 8, parameter ADDR_WIDTH = 10, parameter INIT
   reg [DATA_WIDTH - 1:0] rom_mem[2**ADDR_WIDTH - 1:0];
 
   initial begin
-    // Need to put correct file here
-    $readmemh(INIT_FILE, rom_mem);
+    if(INIT_FILE != "")
+      $readmemh(INIT_FILE, rom_mem);
   end
 
   always @(posedge clk)
