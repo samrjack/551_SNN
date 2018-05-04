@@ -168,6 +168,7 @@ module snn_core_tb();
           $stop;
         end
       join
+      repeat(2) @(posedge clk);
     end
     $stop;
   end 

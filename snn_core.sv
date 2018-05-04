@@ -23,11 +23,11 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   output reg [3:0] digit;
   output reg done;
 
-  reg comp;  // TODO ? Compare ? Maybe meaning to find max digit?
+  reg comp;  // Compare new digits
   reg layer; // Layer being processed with MAC. 0 = input layer; 1 = hidden layer.
   reg we_h, we_o; // Hidden layer write enable; output layer write enable 
   reg doCnt_784, doCnt_32, doCnt_10;      // ?
-  reg clr_784, clr_32, clr_10, clr_mac_n; // Clear signals
+  reg clr_784, clr_32, clr_10, clr_mac_n, clr_comp; // Clear signals
 
   reg  [3:0]   addr_o_u; // Address of output unit
   reg  [4:0]   addr_h_u; // Address of hidden unit
@@ -165,8 +165,14 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
         digit <= nxt_digit;
         val <= nxt_val;
       end
+    end else if(clr_comp) begin //0503
+      digit <= 4'h0;
+      nxt_digit <= 4'h0;
+      val <= 8'h0;
+      nxt_val <= 8'h0;
     end
   end
+
 
   // State transition.
   always_ff@(posedge clk, negedge rst_n) begin
@@ -178,7 +184,6 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   
   always_comb begin
     // INITIALIZE DEFAULT         
-    // TODO git next state a default value
     nxt_state = IDLE;
     clr_mac_n = 1'b1; // Do NOT clear MAC
     clr_784   = 1'b0; // Do clear addr_input_unit  addr_input_unit = 10'h0; // determines q_input_l [from user]
@@ -192,15 +197,18 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     we_h      = 1'b0;    
     we_o      = 1'b0;
     comp      = 1'b0;
+    clr_comp  = 1'b0; // 0503
 
     case(state)
       IDLE: begin
-        clr_10  = 1'b1;
-        clr_784 = 1'b1;
-        clr_32  = 1'b1;
+        clr_comp   = 1'b1; // 0503
+        clr_10     = 1'b1;
+        clr_784    = 1'b1;
+        clr_32     = 1'b1;
         clr_mac_n  = 1'b0;
         if(start) begin
           nxt_state = MAC_HIDDEN_0;
+        end
       end
       
       MAC_HIDDEN_0: begin   // Do the Multi and Acc 784 times 
@@ -208,40 +216,24 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
         doCnt_784 = 1'b1;    // Increment both addrs for input and hidden weight next clk edge
         nxt_state = MAC_HIDDEN_0;
         if (addr_input_unit == HIDDEN) begin// if addr == d783
-                  // next state the hidden weight advance to (n+1, 0)
           nxt_state = MAC_HIDDEN_1;   
-          // there was store -- means the act_input is VALID at this cycle
-          // instead, directly connect act_input to LUT, next cycle the f_act_o is VALID 
-          //store = 1'b1; 
-          //// 0502 TODO  At the 0-783 last time multi, next clk posedge, acc would be available.  
           clr_784 = 1'b1;
+        end
       end
       
       MAC_HIDDEN_1: begin // Wait one cycle for the 784th mac res to be accumulated
-          we_h = 1'b1;  // 0502
-          nxt_state = MAC_HIDDEN_2;   // Next State  ACT Func Output VALID
+        we_h = 1'b1;
+        nxt_state = MAC_HIDDEN_2;   // Next State  ACT Func Output VALID
       end
 
       MAC_HIDDEN_2: begin //LUT output would be valid next state
-        // we_h = 1'b1;        //Next state, finish writing to hidden unit
-          // addr_f_act determined by addr_h_u and cnt, Then mac would also be cleared next state
-        /*
-        // doCnt_32 = 1'b1;
-        if (addr_h_u == 5'h1f) begin
-            clr_32 = 1'b1;
-            //layer = 1'b1; 
-            //stage = 1'b1;
-        end  */
         nxt_state = MAC_HIDDEN_3;
       end
       
       MAC_HIDDEN_3: begin 
-        doCnt_32 = 1'b1; ////////////////////
-        clr_mac_n = 1'b0; // TOO LATE // actually NO
+        doCnt_32 = 1'b1; 
+        clr_mac_n = 1'b0; 
         if (addr_h_u == 5'h1f) begin // hidden unit addr = 31 of [0:31]
-        // move to next phase, need to clear mac
-        //              to clear the hidden unit addr
-          /*  */   /////////////aaaaaaaaaaaa
           clr_32 = 1'b1; 
           layer = 1'b1; 
           nxt_state = MAC_OUT_0; 
@@ -252,10 +244,9 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
 
       // For output part:
       // Need to: layer = 1
-      //      stage = 1
       MAC_OUT_0: begin 
         doCnt_32 = 1'b1; 
-        layer = 1'b1; 
+        layer    = 1'b1; 
         if (addr_h_u == 5'h0)
           clr_mac_n = 1'b0;
 
@@ -279,33 +270,38 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
       MAC_OUT_3: begin 
         layer = 1'b1;
         we_o  = 1'b1;
-        doCnt_10 = 1'b1;
         comp = 1;
         clr_mac_n = 1'b0;
         if (addr_o_u == 4'h9)
           nxt_state = WUJIAN;
-        else 
+        else begin
+          doCnt_10 = 1'b1;  // 0503
           nxt_state = MAC_OUT_0;
+        end
       end
       
       WUJIAN: begin
+        clr_mac_n = 1'b0; //0503
+        clr_10    = 1'b1; //0503
         comp = 1;
         nxt_state = DONE;
       end
       
       DONE: begin
+        clr_mac_n = 1'b0; //0503
         comp = 1'b1;   
         done = 1'b1;
       end
       
       default: begin
-        clr_10  = 1'b1;
-        clr_784 = 1'b1;
-        clr_32  = 1'b1;
-        clr_mac_n  = 1'b0;  // Do clear MAC
+        clr_comp   = 1'b1; // 0503
+        clr_10     = 1'b1;
+        clr_784    = 1'b1;
+        clr_32     = 1'b1;
+        clr_mac_n  = 1'b0;
         if(start) begin
-          nxt_state = MAC_HIDDEN_0;   
-        end else
+          nxt_state = MAC_HIDDEN_0;
+        end
       end
     endcase
   end
