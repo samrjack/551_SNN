@@ -91,13 +91,18 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
   uart_tx transmitter(.clk(clk)
                     , .rst_n(rst_n)
                     , .tx_start(done)
-                    , .tx_data(digit + 8'h30)
+                    , .tx_data(led + 8'h30)
                     , .tx_rdy(tx_ready)
                     , .tx(uart_tx));
 
 	/******************************************************
 	LED
 	******************************************************/
-	assign led = digit;
+  always_ff @(posedge clk, negedge rst_n) begin
+	  if(!rst_n) 
+      led <= 8'h0;
+    else if(done)
+      led <= {4'h0, digit};
+  end
 
 endmodule
