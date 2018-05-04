@@ -10,3 +10,4 @@ transcript
 *.qsf
 *.do
 *.nfs*
+SNN/*
