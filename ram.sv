@@ -27,7 +27,8 @@ module ram #(parameter DATA_WIDTH = 8, parameter ADDR_WIDTH = 10, parameter INIT
   reg [ADDR_WIDTH - 1:0] addr_reg;
 
   initial begin
-    $readmemh(INIT_FILE, ram_mem);
+    if(INIT_FILE != "")
+      $readmemh(INIT_FILE, ram_mem);
   end
 
   always @(posedge clk) begin
