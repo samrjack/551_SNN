@@ -15,7 +15,7 @@
 *   uart_tx   - Uart output transmission line.
 *******************************************************************************/
 
-module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
+module snn(clk, sys_rst_n, led, uart_tx, uart_rx);
 		
 	input clk;			        // 50MHz clock
 	input sys_rst_n;			  // Unsynched reset from push button. Needs to be synchronized.
@@ -42,7 +42,8 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
   wire [7:0] uart_data;
 
   // Loader outputs
-  wire addr, ready, q;
+  wire [9:0] addr;
+  wire ready, q;
 
   // Outputs from core
   wire done;
