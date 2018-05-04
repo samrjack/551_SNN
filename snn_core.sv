@@ -122,7 +122,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
  
   //TODO Can we remove doCnt? I can't tell if it's redundent or not
   //  Counter(ADDR) Logic 784  
-  always_ff@(posedge clk, negedge rst_n) begin 
+  always_ff @(posedge clk, negedge rst_n) begin 
     if (!rst_n)
       addr_input_unit <= 10'h0;
     else if (clr_784)
@@ -132,7 +132,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   end     
   
   // Counter Logic 32       
-  always_ff@(posedge clk, negedge rst_n) begin
+  always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n)
       addr_h_u <= 10'h0;
     else if (clr_32)
@@ -142,7 +142,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   end
 
   // Counter Logic 10      
-  always_ff@(posedge clk, negedge rst_n) begin
+  always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n)
       addr_o_u <= 4'h0;
     else if (clr_10)
@@ -152,7 +152,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   end
  
   // Calculate output value using max of output layer
-  always_ff@(posedge clk, negedge rst_n) begin
+  always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n) begin
       digit <= 4'h0;
       nxt_digit <= 4'h0;
@@ -175,7 +175,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
 
 
   // State transition.
-  always_ff@(posedge clk, negedge rst_n) begin
+  always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n)
       state <= IDLE;
     else
