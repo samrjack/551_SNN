@@ -10,6 +10,7 @@ module load_input_file_tb();
   reg clk, rst_n, trigger;
   reg [7:0] data;
   reg [7:0] sent_data;
+  
   // Variables used for testing
   wire q, ready;
 
@@ -33,7 +34,7 @@ module load_input_file_tb();
     data = 8'h00;
     sent_data = 0;
     @(posedge clk);
-    rst_n = 1;
+    rst_n = 1; // Initial trigger of reset
   endtask
 
   task transmit;
@@ -42,7 +43,7 @@ module load_input_file_tb();
       begin: LOAD_LOOP
         for(addr = 0; addr < 100; addr++) begin
           fork
-            begin: LOAD_DATA
+            begin: LOAD_DATA   // Increment through all addresses, toggling trigger until "ready" received
               data = data_test;
               trigger = 1;
               @(posedge clk);
@@ -53,19 +54,19 @@ module load_input_file_tb();
             end
 
             begin: READY_CHECK
-              if(ready == 1) begin
-                $display("ERROR :: READY asserted in middle of transmittion at #%d.\n", addr);
+              if(ready == 1) begin  // Premature ready flag
+                $display("ERROR :: READY asserted in middle of transmission at #%d.\n", addr);
                 $stop;
               end
 
               @(posedge ready)
               
-              if(addr != 97) begin
+              if(addr != 97) begin // Ready flag at incorrect time
                 $display("ERROR :: READY asserted at time %d.\n", addr);
                 $stop;
               end
 
-              $display("PASSED :: Loaded all data.\n");
+              $display("PASSED :: Loaded all data.\n"); // Success condition
               disable LOAD_DATA;
               disable LOAD_LOOP;
             end
@@ -74,7 +75,7 @@ module load_input_file_tb();
         end // For loop end
       end // For loop break point
 
-      if(ready != 1) begin
+      if(ready != 1) begin      // Ready flag fails to assert after all data sent
         $display("ERROR :: All data sent but READY never asserted.\n");
         $stop;
       end
@@ -83,14 +84,14 @@ module load_input_file_tb();
 
       // Check that the correct address is passed
       data = data_test;      
-      for(addr = 0; addr < 10'd784; addr++) begin: CHECK_DATA_LOOP
+      for(addr = 0; addr < 10'd784; addr++) begin: CHECK_DATA_LOOP // Increment through all 784 address positions
         @(posedge clk);
         #1; // Give q's non-blocking assignment time to propogate through
-        if(q != data[0]) begin
+        if(q != data[0]) begin // Checks if data and q aren't the same and displays error as such
           $display("ERROR :: Values not matching. Addr = %d\tq = %d\tdata[0] = %d.\n", addr, q, data[0]);
           $stop;
         end
-        data = {data[0], data[7:1]};
+        data = {data[0], data[7:1]}; // Shifting of data to the front
       end
 
       // End data check for loop
@@ -101,7 +102,7 @@ module load_input_file_tb();
   //Main logic block
   initial begin
     initialize();
-
+    // Testing of different transmitted files      
     transmit(8'hFF);
     repeat(BAUD) @(posedge clk);
     

@@ -33,8 +33,8 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   reg  [4:0]   addr_h_u; // Address of hidden unit
   wire [10:0] act_input; // Input to activation function
 
- reg [4:0] nxt_digit;
- reg [7:0] nxt_val, val;         //// COMP ////"???????" -Sam
+  reg [4:0] nxt_digit;
+  reg [7:0] nxt_val, val;         //// COMP ////"???????" -Sam
 
   wire [7:0] mac_in1, mac_in2;   // Inputs to MAC madule.
   wire [7:0] w_h, w_o;           // Weight for hidden unit; Weight for output unit.
@@ -107,8 +107,8 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
 
   // To calculate act_input, take rect(mac) + 1024.
   // 1024 already added to saturation cases.
-  assign act_input = (!mac_res[25] &&  |mac_res[24:17]) ? ACT_MAX :
-                     ( mac_res[25] && ~&mac_res[24:17]) ? ACT_MIN :
+  assign act_input = (!mac_res[25] &&  |mac_res[24:17] ) ? ACT_MAX :
+                     ( mac_res[25] && ~&mac_res[24:17] ) ? ACT_MIN :
                        mac_res[17:7] + ACT_OFFSET;
 
   // TODO Verify functionality
@@ -126,9 +126,9 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     if (!rst_n)
       addr_input_unit <= 10'h0;
     else if (clr_784)
-       addr_input_unit <= 10'h0;
+      addr_input_unit <= 10'h0;
     else if (doCnt_784)
-        addr_input_unit <= addr_input_unit + 1;
+      addr_input_unit <= addr_input_unit + 1;
   end     
   
   // Counter Logic 32       
@@ -187,7 +187,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     nxt_state = IDLE;
     clr_mac_n = 1'b1; // Do NOT clear MAC
     clr_784   = 1'b0; // Do clear addr_input_unit  addr_input_unit = 10'h0; // determines q_input_l [from user]
-    clr_32    = 1'b0;  // Initialize addr
+    clr_32    = 1'b0; // Initialize addr
     clr_10    = 1'b0;
     doCnt_784 = 1'b0; 
     doCnt_32  = 1'b0;

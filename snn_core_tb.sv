@@ -1,6 +1,10 @@
 /*******************************************************************************
 * SNN_CORE_TB
-* 
+*
+* Testing whether data from each of the ten values was sent correctly. i.e.
+* was the the done signal asserted at the correct time, was all of the data recieved etc.
+*
+*
 * Authors: Samuel Jackson (srjackson), Colton Bushey (bushey),
 *          Ian Deng (hdeng27), Zuoyi Li (zli482)
 *******************************************************************************/
@@ -40,6 +44,10 @@ module snn_core_tb();
               , .addr_input_unit(addr)
               , .digit(digit));
 
+// After several attempts to get a for loop to generate each of these rams in
+// a beautiful setup, we decided it wasn't worth it and instead just copied
+// and pasted the same ram, altering it to meet our needs. It was a sad day.
+// :'(
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
@@ -130,7 +138,6 @@ module snn_core_tb();
                     , .we(we)
                     , .clk(clk)
                     , .q(q9));
-    
 
   // Task to properly set up tests
   task initialize;
@@ -144,30 +151,32 @@ module snn_core_tb();
     rst_n = 1;
   endtask;
   
-  
-  // hextoa stirng to int
-  
   initial begin
     initialize();
-    for(data_select = 0; data_select < 10; data_select++) begin
+    // Loop through all 10 digits to see if they load correctly
+    for(data_select = 0; data_select < 10; data_select++) begin 
         
       start = 1'b1;
-      @(posedge clk);
+      @(posedge clk); // toggle start flag
       start = 1'b0;
       
       fork 
+        
+        // Done signal received and displays expected number vs actual number
         begin: NORMAL_CASE
           @(posedge done);
-          $display("Value recieved. Input: %h\tReturned: %h\n", data_select, digit);
+          $display("Value recieved. Input: %h\tReturned: %h\n", data_select, digit); 
           disable TIMEOUT;
         end
 
+        // Done signal never sent
         begin: TIMEOUT
           repeat(60000) @(posedge clk);
-          $display("FAILED :: Test timeout for test #%d.", data_select);
+          $display("FAILED :: Test timeout for test #%d.", data_select);  
           $stop;
         end
       join
+      // Delay between start and done
       repeat(2) @(posedge clk);
     end
     $stop;

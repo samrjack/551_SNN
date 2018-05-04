@@ -3,7 +3,8 @@
 *                                                                    
 * Authors: SAMUEL JACKSON (srjackson), COLTON BUSHEY (bushey),
 *          Ian Deng (hdeng27), Zuoyi Li (zli482)
-*          
+* 
+* Main changes include sign extension and removal of OF and UF
 * 
 * INPUTS:
 *   in1     - 1st number operand.
@@ -16,12 +17,14 @@
 *   acc   - Accumulated value of inputs.
 *********************************************************************/
 module mac(in1, in2, clk, rst_n, clr_n, acc);
-
+  
+  // All values have been appropriately sign extended and renamed (such as
+  // A to in1)
   input clk, rst_n, clr_n;
   input signed [7:0] in1, in2;  
 
   output [25:0] acc;
-
+ 
   wire signed [15:0] mult;
   wire signed [25:0] add, acc_nxt;
 
