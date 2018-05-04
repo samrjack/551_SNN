@@ -271,5 +271,3 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   end
 endmodule
 
-
-
