@@ -1,3 +1,9 @@
+/*******************************************************************************
+* SNN_TB
+*
+* Authors: Samuel Jackson (srjackson), Colton Bushey (bushey),
+*          Ian Deng (hdeng27), Zuoyi Li (zli482)
+*******************************************************************************/
 module snn_tb();
 
   reg clk, rst_n;
