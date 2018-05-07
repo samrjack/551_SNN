@@ -22,13 +22,14 @@ module uart_tx(tx_start, tx_data, clk, rst_n, tx_rdy, tx);
   output tx_rdy, tx;    
   
   // Reg for inside always_comb
-  reg [11:0] bd_cnt;
-  reg [9:0] saved_data;
-  reg [3:0] tx_cnt;     // Count 10 bit of data sent in total (data and start end
+  wire full_bd, tx_full;
+
   reg transmit;            // To signify transmitfering a bit of data
   reg clr_bd, clr_tx;   // To reset the counters
   reg tx_rdy;
-  wire full_bd, tx_full;
+  reg [3:0] tx_cnt;     // Count 10 bit of data sent in total (data and start end
+  reg [9:0] saved_data;
+  reg [11:0] bd_cnt;
 
   /* State description:
    *   IDLE: not transmitmitting data
@@ -42,8 +43,8 @@ module uart_tx(tx_start, tx_data, clk, rst_n, tx_rdy, tx);
   localparam NUM_BITS_TO_SEND = 4'hA; // sending a total of 10 bits.
 
   // Minus 1 so that full_bd is high on full cycle, not following cycle
-  assign full_bd = (bd_cnt == BAUD_TIME - 1);
-  assign tx_full = (tx_cnt == NUM_BITS_TO_SEND - 1);
+  assign full_bd = (bd_cnt == BAUD_TIME - 12'h1);
+  assign tx_full = (tx_cnt == NUM_BITS_TO_SEND - 4'h1);
 
   assign tx = (state == IDLE ? 1'b1 : saved_data[0]);
 
@@ -107,7 +108,7 @@ module uart_tx(tx_start, tx_data, clk, rst_n, tx_rdy, tx);
         clr_bd = 1'b0;
         nxt_state = TX;
         if(full_bd) begin
-          clr_bd = 1;
+          clr_bd = 1'b1;
           transmit = 1'b1;
           if(tx_full) begin 
             nxt_state = IDLE;

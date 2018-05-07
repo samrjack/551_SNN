@@ -46,8 +46,8 @@ module uart_rx(rx, clk, rst_n, rx_rdy, rx_data);
 
   // Assign statements
   // Minus 1 since it is starting from 0.
-  assign full = (baud_counter == BAUD_TIME - 1);
-  assign half = (baud_counter == BAUD_TIME - 1 >> 1);
+  assign full = (baud_counter ==  BAUD_TIME - 12'h1);
+  assign half = (baud_counter == (BAUD_TIME - 12'h1) >> 1);
 
   // Next State transition block
   always_ff @(posedge clk, negedge rst_n) begin

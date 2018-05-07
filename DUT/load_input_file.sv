@@ -42,7 +42,7 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
       , .INIT_FILE("")) 
       inputStorage(.data(input_data[0]), .addr(ram_addr), .we(we), .clk(clk), .q(q));
       
-  assign ram_addr = (state == LOAD ? cur_addr : addr);
+  assign ram_addr = (state == LOAD ? cur_addr : addr); // Determines control of RAM's address bus.
   
   // Default State Transition Block 
   always_ff @(posedge clk, negedge rst_n) begin
@@ -55,28 +55,28 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
   // Select data to load
   always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n)
-      input_data = 8'hxx;
+      input_data <= 8'hxx;
     else if(state == LOAD)
-      input_data = {1'hx, input_data[7:1]}; // Shift data
+      input_data <= {1'hx, input_data[7:1]}; // Shift data
     else if(trigger == 1'b1)
-      input_data = data;
+      input_data <= data;
   end
 
   // Increment to next position
   always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n)
-      cur_addr = 0;
+      cur_addr <= 10'h0;
     else if(state == LOAD)
-      cur_addr = cur_addr + 10'h1; // Increment address when loading
+      cur_addr <= cur_addr + 10'h1; // Increment address when loading
     else if(cur_addr == 10'h310)   // Address 784 is the last address so reset to 0
-      cur_addr = 0;
+      cur_addr <= 10'h0;
   end
 
   // State Decision Blocks
   always_comb begin
     nxt_state = IDLE;
     ready = 1'b0;
-    we = 0;
+    we = 1'b0;
 
     case(state)
       IDLE: // default state
@@ -89,7 +89,7 @@ module load_input_file(clk, rst_n, q, trigger, data, addr, ready);
       LOAD:
         begin
           nxt_state = LOAD; 
-          we = 1;                         // Turn on write enable ot send a byte  
+          we = 1'b1;                      // Turn on write enable ot send a byte  
           if(cur_addr[2:0] == 4'h7) begin // Indicates start of new byte so Load is ended
             nxt_state = END_LOAD;
           end

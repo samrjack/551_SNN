@@ -31,22 +31,23 @@ module snn_tb();
 
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(7)
-      , .INIT_FILE("input_samples/uart_sample_0.txt"))
+      , .INIT_FILE("../input_samples/uart_sample_0.txt"))
       number_input0(.addr(ram_addr)
                   , .clk(clk)
                   , .q(rom_data));
 
   task initialize;
-    clk = 0;
-    rst_n = 0;
-    send = 0;
+    clk      = 1'b0;
+    rst_n    = 1'b0;
+    send     = 1'b0;
     ram_addr = 7'h0; 
     @(posedge clk);
-    rst_n = 1;
+    rst_n    = 1'b1;
   endtask
 
+  // Used to print all ram values
   task checkRom;
-     for(ram_addr = 0; ram_addr < 98; ram_addr++) begin
+     for(ram_addr = 7'h0; ram_addr < 7'd98; ram_addr++) begin
       @(posedge clk); //Propgate changes
       @(posedge clk);
 
@@ -56,21 +57,20 @@ module snn_tb();
 
   initial begin
     initialize();
-    checkRom();
-    for(ram_addr = 0; ram_addr < 98; ram_addr++) begin
+    for(ram_addr = 7'h0; ram_addr < 7'd98; ram_addr++) begin
       
       @(posedge clk); //Propgate changes
       @(posedge clk);
       
-      send = 1;
+      send = 1'b1;
       @(posedge clk);
-      send = 0;
+      send = 1'b0;
            
       @(posedge ready_freddy);
 
     end
     
-    ram_addr = 0;
+    ram_addr = 7'h0;
     @(posedge ready_neddy);
     out = output_data;
     $display("Value outputed: %h\n", out);
@@ -81,3 +81,4 @@ module snn_tb();
     #5 clk = ~clk;
 
 endmodule
+

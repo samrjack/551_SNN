@@ -16,7 +16,6 @@ module load_input_file_tb();
 
   reg [9:0] addr;
 
-  localparam BAUD = 12'hA2D;
   load_input_file iDUT(.clk(clk)
                      , .rst_n(rst_n)
                      , .q(q)
@@ -27,29 +26,35 @@ module load_input_file_tb();
 
 
   task initialize;
-    addr = 0;
-    clk = 0;
-    rst_n = 0;
-    trigger = 0;
+    addr = 10'h0;
+    clk = 1'b0;
+    rst_n = 1'b0;
+    trigger = 1'b0;
     data = 8'h00;
-    sent_data = 0;
+    sent_data = 8'h0;
     @(posedge clk);
-    rst_n = 1; // Initial trigger of reset
+    rst_n = 1'b1; // Initial trigger of reset
   endtask
 
+  // By taking in a byte of data and transimitting it many times, should be
+  // able to fill up the ram and then check it. Although random non-repeating
+  // bytes would be best, this test is magnitudes easier and should highly
+  // corrolate with actual functionality and will catch most bugs.
   task transmit;
     input [7:0] data_test;
     begin: TRANSMIT_TASK
       begin: LOAD_LOOP
-        for(addr = 0; addr < 100; addr++) begin
+        // Sends too many packets to check that ready is asserted at the
+        // appropriate point.
+        for(addr = 10'h0; addr < 10'd100; addr++) begin
           fork
             begin: LOAD_DATA   // Increment through all addresses, toggling trigger until "ready" received
               data = data_test;
-              trigger = 1;
+              trigger = 1'b1;
               @(posedge clk);
-              trigger = 0;
+              trigger = 1'b0;
               data = 8'h00;
-              repeat(50) @(posedge(clk));
+              repeat(50) @(posedge(clk)); // Should be one baud cycle, but 50 should allow for pleanty of time.
               disable READY_CHECK;
             end
 
@@ -75,18 +80,18 @@ module load_input_file_tb();
         end // For loop end
       end // For loop break point
 
-      if(ready != 1) begin      // Ready flag fails to assert after all data sent
+      if(ready != 1) begin // Ready flag fails to assert after all data sent
         $display("ERROR :: All data sent but READY never asserted.\n");
         $stop;
       end
 
-      addr = 0;
+      addr = 10'h0; // Reseted to prevent unknown values in the tb.
 
       // Check that the correct address is passed
       data = data_test;      
-      for(addr = 0; addr < 10'd784; addr++) begin: CHECK_DATA_LOOP // Increment through all 784 address positions
+      for(addr = 10'h0; addr < 10'd784; addr++) begin: CHECK_DATA_LOOP // Increment through all 784 address positions
         @(posedge clk);
-        #1; // Give q's non-blocking assignment time to propogate through
+        @(negedge clk); // Give q's non-blocking assignment time to propogate through due to nonblocking assignments
         if(q != data[0]) begin // Checks if data and q aren't the same and displays error as such
           $display("ERROR :: Values not matching. Addr = %d\tq = %d\tdata[0] = %d.\n", addr, q, data[0]);
           $stop;
@@ -95,7 +100,7 @@ module load_input_file_tb();
       end
 
       // End data check for loop
-      $display("PASSED :: Data  correctly sent.\n");
+      $display("PASSED :: Data %b correctly sent.\n", data_test);
     end // End of task block
   endtask
 
@@ -104,19 +109,19 @@ module load_input_file_tb();
     initialize();
     // Testing of different transmitted files      
     transmit(8'hFF);
-    repeat(BAUD) @(posedge clk);
+    repeat(300) @(posedge clk);
     
     transmit(8'h00);
-    repeat(BAUD) @(posedge clk);
+    repeat(300) @(posedge clk);
 
     transmit(8'b10011001);
-    repeat(BAUD) @(posedge clk);
+    repeat(300) @(posedge clk);
 
     transmit(8'b11000011);
-    repeat(BAUD) @(posedge clk);
+    repeat(300) @(posedge clk);
 
     transmit(8'b10010011);
-    repeat(BAUD) @(posedge clk);
+    repeat(300) @(posedge clk);
 
     $stop;
   end

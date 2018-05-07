@@ -18,30 +18,27 @@ module uart_tx_tb();
   /* Structural Verilog */
   uart_tx iDUT(.tx_start(tx_start), .tx_data(tx_data), .clk(clk), .rst_n(rst_n), .tx_rdy(tx_rdy), .tx(tx));
 
-  /* Dataflow Verilog */
-
-
   /* Behavioral Verilog */
   // tasks
   task initialize;
-    clk = 0;
-    rst_n = 0;
-    tx_start = 0;
-    tx_data = 0;
-    sent_data = 0;
-    i = 0;
+    clk       = 1'b0;
+    rst_n     = 1'b0;
+    tx_start  = 1'b0;
+    tx_data   = 1'b0;
+    sent_data = 1'b0;
+    i         = 1'b0;
     @(posedge clk);
-    rst_n = 1;
+    rst_n     = 1'b1;
   endtask
 
   task transmit;
     input [7:0] data;
     begin
-      tx_data = data;
-      tx_start = 1;
+      tx_data  = data;
+      tx_start = 1'b1;
       @(posedge clk);
-      tx_start = 0;
-      tx_data = 8'h00;
+      tx_start = 1'b0;
+      tx_data  = 8'h00;
       @(posedge(clk));
 
       // Send signal with no tx_rdy

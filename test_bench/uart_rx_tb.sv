@@ -6,11 +6,14 @@
 *******************************************************************************/
 module uart_rx_tb();
 
-  reg rx, clk, rst_n;
   wire rx_rdy;
   wire [7:0] rx_data;
-  reg [7:0] ex_data;
+
+  reg rx, clk, rst_n;
   reg [3:0] counter;
+  reg [7:0] ex_data;
+
+  localparam BAUD = 12'hA2D;
 
   uart_rx iDUT(.rx(rx), .clk(clk), .rst_n(rst_n), .rx_rdy(rx_rdy), .rx_data(rx_data));  
 
@@ -24,7 +27,7 @@ module uart_rx_tb();
       begin : submit
         for(counter = 4'd0; counter < 4'd10; counter = counter + 1) begin
           rx = data[counter];
-          repeat(12'hA2D) @(posedge clk);
+          repeat(BAUD) @(posedge clk);
         end
         disable submit_stopper;
       end
@@ -37,7 +40,7 @@ module uart_rx_tb();
       end
     join
 
-    rx = 1;
+    rx = 1'b1;
 
     // Check for proper output
     fork
@@ -74,13 +77,11 @@ module uart_rx_tb();
 
   // Task to properly set up tests
   task initialize;
-    clk = 0;
-    rx = 1;
-    rst_n = 0;
-
+    clk   = 1'b0;
+    rx    = 1'b1;
+    rst_n = 1'b0;
     @(posedge clk);
-
-    rst_n = 1;
+    rst_n = 1'b1;
   endtask;
 
   // Main control block
@@ -90,22 +91,22 @@ module uart_rx_tb();
     // Test symetric data
     ex_data = 8'hA5;
     submit_data({1'b1, ex_data, 1'b0});
-    repeat(12'hA2D) @(posedge clk);
+    repeat(BAUD) @(posedge clk);
 
     ex_data = 8'hE7;
     submit_data({1'b1, ex_data, 1'b0});
-    repeat(12'hA2D) @(posedge clk);
+    repeat(BAUD) @(posedge clk);
 
     // Test asymetric data
     ex_data = 8'h24;
     submit_data({1'b1, ex_data, 1'b0});
-    repeat(12'hA2D) @(posedge clk);
+    repeat(BAUD) @(posedge clk);
 
     ex_data = 8'h01;
     submit_data({1'b1, ex_data, 1'b0});
-    repeat(12'hA2D) @(posedge clk);
+    repeat(BAUD) @(posedge clk);
 
-    repeat(12'hA2D >> 2) @(posedge clk);
+    repeat(BAUD >> 2) @(posedge clk);
     $stop;
   end
   

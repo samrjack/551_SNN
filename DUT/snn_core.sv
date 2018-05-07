@@ -19,22 +19,22 @@
 module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
 
   input start, q_input, clk, rst_n;
-  output reg [9:0] addr_input_unit;
   output reg [3:0] digit;
+  output reg [9:0] addr_input_unit;
   output reg done;
 
-  reg comp;  // Compare new digits
+  reg comp;  // signal to Compare new digits.
   reg layer; // Layer being processed with MAC. 0 = input layer; 1 = hidden layer.
-  reg we_h, we_o; // Hidden layer write enable; output layer write enable 
-  reg doCnt_784, doCnt_32, doCnt_10;      // ?
-  reg clr_784, clr_32, clr_10, clr_mac_n, clr_comp; // Clear signals
+  reg we_h, we_o; // Hidden layer write enable; output layer write enable.
+  reg doCnt_784, doCnt_32, doCnt_10; // enables counters.
+  reg clr_784, clr_32, clr_10, clr_mac_n, clr_comp; // Clear signals.
 
-  reg  [3:0]   addr_o_u; // Address of output unit
-  reg  [4:0]   addr_h_u; // Address of hidden unit
-  wire [10:0] act_input; // Input to activation function
+  reg  [3:0]   addr_o_u; // Address of output unit.
+  reg  [4:0]   addr_h_u; // Address of hidden unit.
+  wire [10:0] act_input; // Input to activation function.
 
- reg [3:0] nxt_digit;
- reg [7:0] nxt_val, val;         //// COMP ////"???????" -Sam
+ reg [3:0] nxt_digit;            // Used to hold current digit location.
+ reg [7:0] nxt_val, val;         // Used for recording highest output values.
 
   wire [7:0] mac_in1, mac_in2;   // Inputs to MAC madule.
   wire [7:0] w_h, w_o;           // Weight for hidden unit; Weight for output unit.
@@ -46,7 +46,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   wire [25:0] mac_res;           // Cumulative result of MAC.
 
   /* States:
-   * IDLE - 
+   * IDLE - Default state. Waiting for a start signal.
    * MAC_HIDDEN_0 -
    * MAC_HIDDEN_1 -
    * MAC_HIDDEN_2 -
@@ -76,32 +76,32 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   // Instantiate ROMS (READ ONLY)
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(15)
-      , .INIT_FILE("mem_init_files/rom_hidden_weight_contents.txt"))
+      , .INIT_FILE("../mem_init_files/rom_hidden_weight_contents.txt"))
       rom_hidden_weight(.addr(addr_w_h), .clk(clk), .q(w_h));
 
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(9)
-      , .INIT_FILE("mem_init_files/rom_output_weight_contents.txt"))
+      , .INIT_FILE("../mem_init_files/rom_output_weight_contents.txt"))
       rom_output_weight(.addr(addr_w_o), .clk(clk), .q(w_o));
 
   rom #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(11)
-      , .INIT_FILE("mem_init_files/rom_act_func_lut_contents.txt"))
+      , .INIT_FILE("../mem_init_files/rom_act_func_lut_contents.txt"))
       rom_act_func_lut(.addr(act_input), .clk(clk), .q(f_act_o));
 
   // Instantiate RAM     
   ram #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(5)
-      , .INIT_FILE("mem_init_files/ram_hidden_contents.txt"))
+      , .INIT_FILE("../mem_init_files/ram_hidden_contents.txt"))
       ram_hidden_unit(.data(f_act_o), .addr(addr_h_u), .we(we_h), .clk(clk), .q(q_hidden));
  
       
   ram #(.DATA_WIDTH(8)
       , .ADDR_WIDTH(4)
-      , .INIT_FILE("mem_init_files/ram_output_contents.txt"))
+      , .INIT_FILE("../mem_init_files/ram_output_contents.txt"))
       ram_output_unit(.data(f_act_o), .addr(addr_o_u), .we(we_o), .clk(clk), .q(q_output));
  
-  assign q_input_l = {1'b0,{7{q_input}}}; // Extend q_input 
+  assign q_input_l = {1'b0,{7{q_input}}}; // Extend q_input to fit into mac
   assign mac_in2   = (layer)? w_o : w_h; 
   assign mac_in1   = (layer)? q_hidden : q_input_l; 
 
@@ -111,16 +111,14 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
                      ( mac_res[25] && ~&mac_res[24:17] ) ? ACT_MIN :
                        mac_res[17:7] + ACT_OFFSET;
 
-  // TODO Verify functionality
-  // addr_hidden_weight[14:0] = {addr_h_u[4:0], cnt_input[9:0]}
+  // Hidden weight = {hidden node #, input value number}
   assign addr_w_h = {addr_h_u, addr_input_unit}; 
 
-  // addr_w_o[8:0]  = {addr_o_u[3:0], addr_h_u[4:0]};
+  // Output weight = {output #, hidden node #}
   assign addr_w_o = {addr_o_u, addr_h_u}; 
  
 
  
-  //TODO Can we remove doCnt? I can't tell if it's redundent or not
   //  Counter(ADDR) Logic 784  
   always_ff @(posedge clk, negedge rst_n) begin 
     if (!rst_n)
@@ -128,7 +126,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     else if (clr_784)
       addr_input_unit <= 10'h0;
     else if (doCnt_784)
-      addr_input_unit <= addr_input_unit + 1;
+      addr_input_unit <= addr_input_unit + 10'h1;
   end     
   
   // Counter Logic 32       
@@ -138,7 +136,7 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     else if (clr_32)
       addr_h_u <= 10'h0;
     else if (doCnt_32)
-      addr_h_u <= addr_h_u + 1;
+      addr_h_u <= addr_h_u + 10'h1;
   end
 
   // Counter Logic 10      
@@ -148,28 +146,28 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     else if (clr_10)
       addr_o_u <= 4'h0;
     else if (doCnt_10)
-      addr_o_u <= addr_o_u + 1;
+      addr_o_u <= addr_o_u + 4'h1;
   end
  
   // Calculate output value using max of output layer
   always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n) begin
-      digit <= 4'h0;
+      digit     <= 4'h0;
       nxt_digit <= 4'h0;
-      val <= 8'h0;
-      nxt_val <= 8'h0;
+      val       <= 8'h0;
+      nxt_val   <= 8'h0;
     end else if(we_o || comp) begin
       nxt_digit <= addr_o_u;
-      nxt_val <= f_act_o; // q_output
+      nxt_val   <= f_act_o; // q_output
       if(nxt_val > val) begin
         digit <= nxt_digit;
-        val <= nxt_val;
+        val   <= nxt_val;
       end
-    end else if(clr_comp) begin //0503
-      digit <= 4'h0;
+    end else if(clr_comp) begin
+      digit     <= 4'h0;
       nxt_digit <= 4'h0;
-      val <= 8'h0;
-      nxt_val <= 8'h0;
+      val       <= 8'h0;
+      nxt_val   <= 8'h0;
     end
   end
 
@@ -197,11 +195,11 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
     we_h      = 1'b0;    
     we_o      = 1'b0;
     comp      = 1'b0;
-    clr_comp  = 1'b0; // 0503
+    clr_comp  = 1'b0; 
 
     case(state)
       IDLE: begin
-        clr_comp   = 1'b1; // 0503
+        clr_comp   = 1'b1;
         clr_10     = 1'b1;
         clr_784    = 1'b1;
         clr_32     = 1'b1;
@@ -270,31 +268,31 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
       MAC_OUT_3: begin 
         layer = 1'b1;
         we_o  = 1'b1;
-        comp = 1;
+        comp = 1'b1;
         clr_mac_n = 1'b0;
         if (addr_o_u == 4'h9)
           nxt_state = WUJIAN;
         else begin
-          doCnt_10 = 1'b1;  // 0503
+          doCnt_10 = 1'b1;
           nxt_state = MAC_OUT_0;
         end
       end
       
       WUJIAN: begin
-        clr_mac_n = 1'b0; //0503
-        clr_10    = 1'b1; //0503
-        comp = 1;
+        clr_mac_n = 1'b0;
+        clr_10    = 1'b1; 
+        comp = 1'b1;
         nxt_state = DONE;
       end
       
       DONE: begin
-        clr_mac_n = 1'b0; //0503
+        clr_mac_n = 1'b0;
         comp = 1'b1;   
         done = 1'b1;
       end
       
       default: begin
-        clr_comp   = 1'b1; // 0503
+        clr_comp   = 1'b1;
         clr_10     = 1'b1;
         clr_784    = 1'b1;
         clr_32     = 1'b1;

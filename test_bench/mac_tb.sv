@@ -8,7 +8,6 @@
 
 module mac_tb();
 
-  // Initiialize
   logic signed [7:0] stm_a, stm_b;
   logic signed [25:0] acc;
   logic clr_n, clk, rst_n;
@@ -41,24 +40,27 @@ module mac_tb();
   ****************************************************************************/
   task clear;
     $display("Clearing results. Final value: %d.\n\n\n",acc);
-    clr_n = 0;
-    exp_acc = 0;
+    clr_n = 1'b0;
+    exp_acc = 1'b0;
     @(posedge clk);
-    clr_n = 1;
+    clr_n = 1'b1;
+  endtask
+
+  task initialize;
+    clk = 1'b0;
+    rst_n = 1'b0;
+    stm_a = 1'b0;
+    stm_b = 1'b0;
+    clr_n = 1'b1;
+    @(posedge clk);
+    rst_n = 1'b1;
+    clear();
   endtask
   
   initial begin
-    clk = 0;
-    rst_n = 0;
-    stm_a = 0;
-    stm_b = 0;
-    clr_n = 1;
-    @(posedge clk);
-    rst_n = 1;
-    clear();
-
+    initialize();
+ 
     // First example: 2*5 + (-2)*5 + (-3)*8
-    
     stm_a = 8'd2;
     stm_b = 8'd5;
     load();
@@ -101,4 +103,6 @@ module mac_tb();
   ***********************/
   always
     #5 clk = ~clk;
+
 endmodule
+

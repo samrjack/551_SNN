@@ -11,12 +11,13 @@
 module snn_core_tb();
 
   // Variables used in DUTs
+  wire done;
+  wire q_input;
+  wire [3:0] digit;
+  wire [9:0] addr;
+
   reg clk, rst_n;
   reg start;
-  wire q_input;
-  wire [9:0] addr;
-  wire [3:0] digit;
-  wire done;
   
   // Variables used for testing
   wire q1, q2, q3, q4, q5, q6, q7, q8, q9, q0;
@@ -25,6 +26,7 @@ module snn_core_tb();
   reg we;
   reg[4:0] data_select;
   
+  // Chooses which test to preform
   assign q_input = data_select == 0 ? q0 :
                    data_select == 1 ? q1 :
                    data_select == 2 ? q2 :
@@ -51,7 +53,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_0.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_0.txt"))
         number_input0(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -60,7 +62,7 @@ module snn_core_tb();
                     
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_1.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_1.txt"))
         number_input1(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -69,7 +71,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_2.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_2.txt"))
         number_input2(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -78,7 +80,7 @@ module snn_core_tb();
    
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_3.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_3.txt"))
         number_input3(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -87,7 +89,7 @@ module snn_core_tb();
    
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_4.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_4.txt"))
         number_input4(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -96,7 +98,7 @@ module snn_core_tb();
    
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_5.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_5.txt"))
         number_input5(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -105,7 +107,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_6.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_6.txt"))
         number_input6(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -114,7 +116,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_7.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_7.txt"))
         number_input7(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -123,7 +125,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_8.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_8.txt"))
         number_input8(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -132,7 +134,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("input_samples/ram_input_contents_sample_9.txt"))
+        , .INIT_FILE("../input_samples/ram_input_contents_sample_9.txt"))
         number_input9(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -141,27 +143,25 @@ module snn_core_tb();
 
   // Task to properly set up tests
   task initialize;
-    clk = 0;
-    rst_n = 0;
-    start = 0;
-    we = 0;
-    data = 0;
+    clk   = 1'b0;
+    rst_n = 1'b0;
+    start = 1'b0;
+    we    = 1'b0;
+    data  = 1'b0;
     @(posedge clk);
-    
-    rst_n = 1;
+    rst_n = 1'b1;
   endtask;
   
   initial begin
     initialize();
     // Loop through all 10 digits to see if they load correctly
-    for(data_select = 0; data_select < 10; data_select++) begin 
+    for(data_select = 5'h0; data_select < 5'h10; data_select++) begin 
         
       start = 1'b1;
       @(posedge clk); // toggle start flag
       start = 1'b0;
       
       fork 
-        
         // Done signal received and displays expected number vs actual number
         begin: NORMAL_CASE
           @(posedge done);
@@ -187,3 +187,4 @@ module snn_core_tb();
     #5 clk = ~clk;
 
 endmodule
+

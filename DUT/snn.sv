@@ -92,7 +92,7 @@ module SNN(clk, sys_rst_n, led, uart_tx, uart_rx);
   uart_tx transmitter(.clk(clk)
                     , .rst_n(rst_n)
                     , .tx_start(send_trans)
-                    , .tx_data(led + 8'h30)
+                    , .tx_data(led + 8'h30) // Asked to return ascii values
                     , .tx_rdy(tx_ready)
                     , .tx(uart_tx));
 
