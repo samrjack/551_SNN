@@ -1,25 +1,57 @@
-##  Read File for snn_core
-read_file -format sverilog { snn.sv load_input_file.sv uart_rx.sv uart_tx.sv \
-                            mac.sv snn_core.sv rom.sv ram.sv rst_synch.sv }
+################################################################
+# SNN Design Vision compile script                             #
+#                                                              #     
+# Authors: SAMUEL JACKSON (srjackson), COLTON BUSHEY (bushey), #
+#          Ian Deng (hdeng27), Zuoyi Li (zli482)               #
+################################################################
 
-set current_design snn_core
+############################################
+# Read in the project system verilog files #
+############################################
+read_file -format sverilog { ./DUT/snn.sv\
+							 ./DUT/rom.sv\ 
+							 ./DUT/ram.sv\ 
+                             ./DUT/mac.sv\
+							 ./DUT/uart_rx.sv\ 
+							 ./DUT/uart_tx.sv\
+							 ./DUT/snn_core.sv\
+							 ./DUT/rst_synch.sv\
+                             ./DUT/load_input_file.sv }
 
+############################
+# Set snn to the top level #
+############################
+set current_design SNN
+
+###########################
+# Set up the clock signal #
+###########################
 create_clock -name "clk" -period  2.5 -waveform {0 1.25} {clk}
 set_dont_touch_network [find port clk]
+
+################################
+# Set drive strength of inputs #
+################################
 set prim_inputs [remove_from_collection [all_inputs] [find port clk]]
 set_input_delay -clock clk 0.5 [copy_collection $prim_inputs]
+set_driving_cell -lib_cell ND2D2BWP -from_pin A1 -library tcbn40lpbwptc $prim_inputs
 
-set_driving_cell -lib_cell ND2D2BWP -from_pin A1 -library    \
-          tcbn40lpbwptc $prim_inputs
-
- # set_driving_cell -lib_cell ND2D2BWP -pin Z -from_pin A1 -library \
- #		tcbn40lpbwptc[copy_collection $prim_inputs]
-			
+################################
+# Set output delay constraints #
+################################
 set_output_delay -clock clk 0.5 [all_outputs]
 set_load 0.1 [all_outputs]
+
+#############################
+# Miscellaneous constraints #
+#############################
 set_wire_load_model -name TSMC32K_Lowk_Conservative -library tcbn40lpbwptc
 set_max_transition 0.15 [current_design]
 set_clock_uncertainty 0.10 clk
+
+######################
+# Compile the design #
+######################
 compile -map_effort medium
 
 check_design
@@ -33,4 +65,8 @@ report_timing -path full -delay max -nworst 3
 report_timing -path full -delay min -nworst 3
 check_design
 report_area
-write -format verilog SNN snn_0504.vg
+
+###########################################
+# Write out resulting synthesized netlist #
+###########################################
+write -format verilog SNN -output snn.vg

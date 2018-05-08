@@ -132,11 +132,11 @@ module snn_core(clk, rst_n, start, q_input, addr_input_unit, digit, done);
   // Counter Logic 32       
   always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n)
-      addr_h_u <= 10'h0;
+      addr_h_u <= 5'h0;
     else if (clr_32)
-      addr_h_u <= 10'h0;
+      addr_h_u <= 5'h0;
     else if (doCnt_32)
-      addr_h_u <= addr_h_u + 10'h1;
+      addr_h_u <= addr_h_u + 5'h1;
   end
 
   // Counter Logic 10      
