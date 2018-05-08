@@ -53,7 +53,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_0.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_0.txt"))
         number_input0(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -62,7 +62,7 @@ module snn_core_tb();
                     
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_1.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_1.txt"))
         number_input1(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -71,7 +71,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_2.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_2.txt"))
         number_input2(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -80,7 +80,7 @@ module snn_core_tb();
    
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_3.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_3.txt"))
         number_input3(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -89,7 +89,7 @@ module snn_core_tb();
    
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_4.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_4.txt"))
         number_input4(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -98,7 +98,7 @@ module snn_core_tb();
    
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_5.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_5.txt"))
         number_input5(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -107,7 +107,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_6.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_6.txt"))
         number_input6(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -116,7 +116,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_7.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_7.txt"))
         number_input7(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -125,7 +125,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_8.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_8.txt"))
         number_input8(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -134,7 +134,7 @@ module snn_core_tb();
 
     ram #(.DATA_WIDTH(1)
         , .ADDR_WIDTH(10)
-        , .INIT_FILE("../input_samples/ram_input_contents_sample_9.txt"))
+        , .INIT_FILE("input_samples/ram_input_contents_sample_9.txt"))
         number_input9(.data(data)
                     , .addr(addr)
                     , .we(we)
@@ -155,7 +155,7 @@ module snn_core_tb();
   initial begin
     initialize();
     // Loop through all 10 digits to see if they load correctly
-    for(data_select = 5'h0; data_select < 5'h10; data_select++) begin 
+    for(data_select = 5'd0; data_select < 5'd10; data_select++) begin 
         
       start = 1'b1;
       @(posedge clk); // toggle start flag
