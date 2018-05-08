@@ -11,3 +11,7 @@ transcript
 *.do
 *.nfs*
 SNN/*
+*.vg
+*.svg
+*.svf
+default*

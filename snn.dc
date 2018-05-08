@@ -8,15 +8,19 @@
 ############################################
 # Read in the project system verilog files #
 ############################################
-read_file -format sverilog { ./DUT/snn.sv\
-							 ./DUT/rom.sv\ 
-							 ./DUT/ram.sv\ 
-                             ./DUT/mac.sv\
-							 ./DUT/uart_rx.sv\ 
-							 ./DUT/uart_tx.sv\
-							 ./DUT/snn_core.sv\
-							 ./DUT/rst_synch.sv\
-                             ./DUT/load_input_file.sv }
+read_file -format sverilog { DUT/snn.sv \
+							 DUT/rom.sv \
+							 DUT/ram.sv \
+                             DUT/mac.sv \
+							 DUT/uart_rx.sv \
+							 DUT/uart_tx.sv \
+							 DUT/snn_core.sv \
+							 DUT/rst_synch.sv \
+                             DUT/load_input_file.sv }
+
+# Removes rom and ram duts from optimization
+set_dont_touch *rom*
+set_dont_touch *ram*
 
 ############################
 # Set snn to the top level #
